@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+<canvas id="Game" width="800" height="600"></canvas>
+
+<script>
+	var c, cx;
+	var WIDTH = 800;
+	var HEIGHT = 600;
+
+	var enemyList = {};
+	var particleList = {};
+
+	var player = {
+		speedX: 10,
+		speedY: 5,
+		x: 50,
+		y: 50,
+		width: 50,
+		height: 50,
+		id: 'player',
+	};
+
+	Enemy('e1', 12, 8, 0, 0, 'blue');
+	for (var i = 0; i < 100; i++) ParticleEmitter();
+	
+
+	document.onmousemove = function(mouse) {
+		var mouseX = mouse.clientX;
+		var mouseY = mouse.clientY;
+
+		player.x = mouseX;
+		player.y = mouseY;
+	}
+
+	function Enemy(id, spdX, spdY, sX, sY, color) {
+		var enemy = {
+			speedX: spdX,
+			speedY: spdY,
+			x: sX,
+			y: sY,
+			width: 50,
+			height: 50,
+			id: id,
+			color: color,
+		};
+		enemyList[id] = enemy;
+	}
+
+	function Particle(id, spdX, spdY, color, width, height) {
+		var particle = {
+			speedX: spdX,
+			speedY: spdY,
+			x: WIDTH/2,
+			y: HEIGHT/2,
+			width: width,
+			height: height,
+			id: id,
+			color: color,
+		};
+		particleList[id] = particle;
+	}
+
+	function ParticleEmitter() {
+		var speedX  = Math.random()*5;
+		var speedY = Math.random()*5;
+		var x = Math.random()*WIDTH;
+		var y = Math.random()*HEIGHT;
+		var width = Math.random()*10;
+		var height = Math.random()*10;
+		var id = Math.random();
+
+		//Generates random RGBA colors to spawn particles on
+		var randomRed = Math.floor(Math.random()*255);
+		var randomGreen = Math.floor(Math.random()*255);
+		var randomBlue = Math.floor(Math.random()*255);
+		var randomAlpha = Math.random();
+		var rgba = "rgba"
+		rgba += "(" + randomRed.toString() + "," + randomGreen.toString() + "," + randomBlue.toString() + "," + randomAlpha.toString() + ")";  
+		var color = rgba;
+		console.log(rgba);
+		Particle(id, speedX, speedY, color, width, height);
+	}	
+
+	window.onload = function() {
+		c = document.getElementById("Game");
+		cx = c.getContext('2d');
+		var fps = 40;
+		setInterval(update,fps);
+	}
+
+	function update() {
+		cls();
+		renderer();
+	}
+
+	function renderer() {
+		drawModels(player,'red');
+		for (var key in particleList) {
+			drawModels(particleList[key], particleList[key].color);
+			particleMotion(particleList[key]);
+			hitTest(player,particleList[key]);
+		}
+		for (var key in enemyList) {
+			drawModels(enemyList[key], enemyList[key].color);
+			wanderingMotion(enemyList[key]);
+			hitTest(player,enemyList[key]);
+		}
+	}
+	function drawRect(x,y,w,h,c) {
+		cx.fillStyle = c;
+		cx.fillRect(x,y,w,h);
+	}
+	function cls() {
+		cx.fillStyle = 'black';
+		cx.fillRect(0,0,c.width,c.height);
+	}
+
+
+	function drawModels(model,c) {
+		drawRect(model.x,model.y,model.width,model.height,c);
+	}
+	function wanderingMotion(model) {
+		model.x += model.speedX;
+		model.y += model.speedY;
+
+	//Bounds for rendering test
+		if (model.x > c.width || model.x < 0) model.speedX = -model.speedX;
+		if (model.y < 0 || model.y > c.height) model.speedY = -model.speedY;
+	}
+	function particleMotion(model) {
+
+			model.x += Math.random() * model.speedX;
+			model.y += Math.random() * model.speedY;
+		
+			//Bounds for rendering test
+		if (model.x > c.width || model.x < 0) model.speedX = -model.speedX;
+		if (model.y < 0 || model.y > c.height) model.speedY = -model.speedY;
+		}
+	function hitTest(model,model2) {
+		if (model.x < model2.x + model2.width &&
+			model.x + model.width > model2.x &&
+			model.y < model2.y + model2.height &&
+			model.height + model.y > model2.y) {
+
+			//model.speedX = -model.speedX;
+			//model.speedY = -model.speedY;
+
+			model2.speedX = -model2.speedX;
+			model2.speedY = -model2.speedY;
+		}
+	}
+</script>
+
+</body>
+</html>
